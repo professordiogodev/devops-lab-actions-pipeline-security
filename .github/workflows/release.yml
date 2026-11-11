@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: write-all
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the packaging tool
+        run: curl -fsSL https://get.example-tools.dev/install.sh | bash
+      - name: Log in to the registry
+        run: |
+          echo "logging in with ${{ secrets.REGISTRY_TOKEN }}"
+          echo "${{ secrets.REGISTRY_TOKEN }}" | docker login ghcr.io -u robot --password-stdin
+      - name: Package
+        run: python3 app/hello.py > release.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release.txt
+      - uses: some-random-org/notify-action@main
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK }}

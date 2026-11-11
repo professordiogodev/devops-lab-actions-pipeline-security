@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Greet the author
+        run: |
+          echo "Thanks for the pull request: ${{ github.event.pull_request.title }}"
+          echo "From branch ${{ github.head_ref }}"
+      - name: Test
+        run: |
+          python3 -m unittest discover -s tests

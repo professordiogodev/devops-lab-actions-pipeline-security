@@ -1,0 +1,23 @@
+name: Preview
+
+# Builds a preview of every pull request, including pull requests from forks,
+# and comments the result. It needs a token that can write, so it uses pull_request_target.
+on:
+  pull_request_target:
+
+permissions: write-all
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Build the preview
+        env:
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+        run: |
+          echo "building with token $REGISTRY_TOKEN"
+          python3 app/hello.py
+          python3 tests/helper.py
